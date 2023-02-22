@@ -1,0 +1,53 @@
+{
+    "name": "getjoystick/joystick-php",
+    "description": "Joystick PHP library",
+    "keywords": [
+        "joystick",
+        "joystick-php",
+        "remote configuration",
+        "feature flagging"
+    ],
+    "homepage": "https://github.com/getjoystick/joystick-php",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Joystick and contributors",
+            "homepage": "https://getjoystick.com"
+        }
+    ],
+    "require": {
+        "php": "^7.1|^8.0",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "beberlei/assert": "^3.3",
+        "php-http/discovery": "^1.15",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "guzzlehttp/guzzle": "^7.5"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Joystick\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Joystick\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}
