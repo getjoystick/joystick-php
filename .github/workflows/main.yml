@@ -32,19 +32,19 @@ jobs:
             fail-fast: true
             matrix:
                 os: [ubuntu-latest, windows-latest]
-                php: 
-                  - version: 7.2
-                    phpunit: 8
-                  - version: 7.3
-                    phpunit: 9
-                  - version: 7.4,
-                    phpunit: 9
-                  - version: 8.0
-                    phpunit: 9
-                  - version: 8.1,
-                    phpunit: 10
-                  - version: 8.2
-                    phpunit: 10
+                php:
+                    - version: 7.2
+                      phpunit: 8
+                    - version: 7.3
+                      phpunit: 9
+                    - version: 7.4,
+                      phpunit: 9
+                    - version: 8.0
+                      phpunit: 9
+                    - version: 8.1,
+                      phpunit: 10
+                    - version: 8.2
+                      phpunit: 10
                 stability: [prefer-stable]
 
         name: P${{ matrix.php.version }} - ${{ matrix.stability }} - ${{ matrix.os }}
@@ -65,7 +65,7 @@ jobs:
                   echo "::add-matcher::${{ runner.tool_cache }}/php.json"
                   echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
             - name: Install dependencies
-              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction && composer global require phpunit/phpunit
+              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction && composer global require phpunit/phpunit@${{ matrix.php.phpunit }}
 
             - name: Execute tests
               run: phpunit --version && phpunit
