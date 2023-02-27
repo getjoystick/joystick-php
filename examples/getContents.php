@@ -11,3 +11,6 @@ $result = $client->getContents(["test-my-php-library", "sample-second"], [
     'serialized' => true,
     'fullResponse' => true,
 ]);
+
+
+var_dump($result);

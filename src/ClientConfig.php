@@ -8,29 +8,48 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-
 class ClientConfig
 {
-    private ClientInterface $httpClient;
+    /**
+     * @var ClientInterface $httpClient
+     */
+    private $httpClient;
 
-    private RequestFactoryInterface $requestFactory;
+    /**
+     * @var RequestFactoryInterface
+     */
+    private $requestFactory;
 
-    private StreamFactoryInterface $streamFactory;
+    /**
+     * @var StreamFactoryInterface
+     */
+    private $streamFactory;
 
-    private string $apiKey;
+    /**
+     * @var string
+     */
+    private $apiKey;
 
-    private string $userId;
+    /**
+     * @var string
+     */
+    private $userId;
 
-    private array $params;
+    /**
+     * @var array
+     */
+    private $params;
 
-    private string $semVer;
-
-
+    /**
+     * @var string
+     */
+    private $semVer;
 
     /**
      * Amount of time to cache in minutes. Default = 10
+     * @var int
      */
-    private int $expiration = 10;
+    private $expiration = 10;
 
     private function __construct()
     {
@@ -54,12 +73,11 @@ class ClientConfig
     }
 
     /**
-     * @param string $apiKey 
+     * @param string $apiKey
      * @return self
      */
     public function setApiKey(string $apiKey): self
     {
-
         $this->apiKey = $apiKey;
         return $this;
     }
@@ -73,7 +91,7 @@ class ClientConfig
     }
 
     /**
-     * @param string $userId 
+     * @param string $userId
      * @return self
      */
     public function setUserId(string $userId): self
@@ -91,7 +109,7 @@ class ClientConfig
     }
 
     /**
-     * @param array $params 
+     * @param array $params
      * @return self
      */
     public function setParams(array $params): self
@@ -117,7 +135,7 @@ class ClientConfig
     }
 
     /**
-     * @param string $semVer 
+     * @param string $semVer
      * @return self
      */
     public function setSemVer(string $semVer): self
@@ -151,10 +169,6 @@ class ClientConfig
         return $this;
     }
 
-
-
-
-
     /**
      * @return ClientInterface
      */
@@ -164,7 +178,7 @@ class ClientConfig
     }
 
     /**
-     * @param ClientInterface $httpClient 
+     * @param ClientInterface $httpClient
      * @return self
      */
     public function setHttpClient(ClientInterface $httpClient): self
@@ -182,7 +196,7 @@ class ClientConfig
     }
 
     /**
-     * @param RequestFactoryInterface $requestFactory 
+     * @param RequestFactoryInterface $requestFactory
      * @return self
      */
     public function setRequestFactory(RequestFactoryInterface $requestFactory): self
@@ -200,7 +214,7 @@ class ClientConfig
     }
 
     /**
-     * @param StreamFactoryInterface $streamFactory 
+     * @param StreamFactoryInterface $streamFactory
      * @return self
      */
     public function setStreamFactory(StreamFactoryInterface $streamFactory): self
