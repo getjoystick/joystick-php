@@ -2,9 +2,9 @@ name: Tests
 
 on: [push, pull_request]
 
-concurrency:
-    group: ${{ github.ref_name }}
-    cancel-in-progress: true
+# concurrency:
+#     group: ${{ github.ref_name }}
+#     cancel-in-progress: true
 
 jobs:
     lint:
@@ -26,7 +26,7 @@ jobs:
               run: ./vendor/bin/phpcs --standard=PSR12 ./src ./tests
 
     test:
-        concurrency: ${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.stability }}
+        # concurrency: ${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.stability }}
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: true
