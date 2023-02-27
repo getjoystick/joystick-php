@@ -65,7 +65,7 @@ jobs:
                   echo "::add-matcher::${{ runner.tool_cache }}/php.json"
                   echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
             - name: Install dependencies
-              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction && composer global require phpunit/phpunit "^${{ matrix.php.phpunit }}"
+              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction && composer global require phpunit/phpunit "^^${{ matrix.php.phpunit }}"
 
             - name: Execute tests
               run: phpunit --version && phpunit
