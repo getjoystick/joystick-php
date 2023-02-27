@@ -32,10 +32,22 @@ jobs:
             fail-fast: true
             matrix:
                 os: [ubuntu-latest, windows-latest]
-                php: [7.2, 7.3, 7.4, 8.0, 8.1, 8.2]
+                php: 
+                  - version: 7.2
+                    phpunit: 8
+                  - version: 7.3
+                    phpunit: 9
+                  - version: 7.4,
+                    phpunit: 9
+                  - version: 8.0
+                    phpunit: 9
+                  - version: 8.1,
+                    phpunit: 10
+                  - version: 8.2
+                    phpunit: 10
                 stability: [prefer-stable]
 
-        name: P${{ matrix.php }} - ${{ matrix.stability }} - ${{ matrix.os }}
+        name: P${{ matrix.php.version }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
         steps:
             - name: Checkout code
@@ -44,7 +56,7 @@ jobs:
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: ${{ matrix.php }}
+                  php-version: ${{ matrix.php.version }}
                   extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
                   coverage: none
 
