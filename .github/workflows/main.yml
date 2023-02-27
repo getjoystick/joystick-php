@@ -34,17 +34,17 @@ jobs:
                 os: [ubuntu-latest, windows-latest]
                 php:
                     - version: 7.2
-                      phpunit: 8
+                      phpunit: 8.5
                     - version: 7.3
-                      phpunit: 8
+                      phpunit: 8.5
                     - version: 7.4
-                      phpunit: 8
+                      phpunit: 8.5
                     - version: 8.0
-                      phpunit: 8
+                      phpunit: 8.5
                     - version: 8.1
-                      phpunit: 8
+                      phpunit: 8.5
                     - version: 8.2
-                      phpunit: 8
+                      phpunit: 8.5
                 stability: [prefer-stable]
 
         name: P${{ matrix.php.version }} - ${{ matrix.stability }} - ${{ matrix.os }}
