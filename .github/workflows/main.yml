@@ -34,17 +34,12 @@ jobs:
                 os: [ubuntu-latest, windows-latest]
                 php:
                     - version: 7.2
-                      phpunit: 8.5
                     - version: 7.3
-                      phpunit: 8.5
                     - version: 7.4
-                      phpunit: 8.5
                     - version: 8.0
-                      phpunit: 8.5
                     - version: 8.1
-                      phpunit: 8.5
                     - version: 8.2
-                      phpunit: 8.5
+
                 stability: [prefer-stable]
 
         name: P${{ matrix.php.version }} - ${{ matrix.stability }} - ${{ matrix.os }}
@@ -59,15 +54,13 @@ jobs:
                   php-version: ${{ matrix.php.version }}
                   extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
                   coverage: none
-                  tools: phpunit/phpunit@^8
-
 
             - name: Setup problem matchers
               run: |
                   echo "::add-matcher::${{ runner.tool_cache }}/php.json"
                   echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
             - name: Install dependencies
-              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction && composer global require phpunit/phpunit '^8.5.33'
 
             - name: Execute tests
               run: phpunit --version && phpunit
