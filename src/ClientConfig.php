@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Joystick;
 
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -10,6 +12,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 
 class ClientConfig
 {
+    public const DEFAULT_EXPIRATION_TIME_MINS = 10;
+
     /**
      * @var ClientInterface $httpClient
      */
@@ -49,7 +53,7 @@ class ClientConfig
      * Amount of time to cache in minutes. Default = 10
      * @var int
      */
-    private $expiration = 10;
+    private $expiration = self::DEFAULT_EXPIRATION_TIME_MINS;
 
     private function __construct()
     {
@@ -67,7 +71,7 @@ class ClientConfig
     /**
      * @return string
      */
-    public function getApiKey(): string
+    public function getApiKey(): ?string
     {
         return $this->apiKey;
     }

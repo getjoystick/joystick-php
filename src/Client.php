@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Joystick;
 
 use Assert\Assert;
+use Joystick\Exceptions\BadRequestException;
+use Psr\Http\Message\ResponseInterface;
 use stdClass;
 
 class Client
@@ -15,17 +19,32 @@ class Client
 
     public static function create(ClientConfig $config)
     {
+        // Validation
+        Assert::that($config->getApiKey(), 'API key')->notEmpty();
+
+        // Instantiation
         $client = new static();
         $client->config = clone $config;
 
         return $client;
     }
 
+    /**
+     * Getting Multiple Pieces of Content via API:
+     * https://docs.getjoystick.com/api-reference-combine/
+     *
+     *
+     * @param string[] $contentIds  List of content identifiers
+     * @param array{refresh: boolean, serialized: boolean, fullResponse: boolean} $options
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws \Psr\Http\Client\RequestExceptionInterface
+     * @throws \Psr\Http\Client\NetworkExceptionInterface
+     */
     public function getContents(array $contentIds, array $options = [])
     {
         $assertion = Assert::lazy()
-            ->that($this->config->getApiKey(), 'API key')->notEmpty()
-            ->that($contentIds, 'contentIds', 'contentIds')->all()->string();
+            ->that($contentIds, 'contentIds', 'contentIds')->minCount(1)->all()->string();
         if (isset($options['refresh'])) {
             $assertion->that($options['refresh'], 'refresh')->boolean();
         }
@@ -46,8 +65,6 @@ class Client
             !empty($options['serialized']) ? ['responseType' =>  'serialized'] : []
         );
 
-        var_dump($requestQueryParams);
-
         $requestQueryParamsSerialized = http_build_query($requestQueryParams);
         $requestBody = array_merge(
             [
@@ -58,18 +75,34 @@ class Client
         );
 
         $request = $this->config->getRequestFactory()
-            ->createRequest('GET', 'https://api.getjoystick.com/api/v1/combine/?' . $requestQueryParamsSerialized)
+            ->createRequest(
+                'GET',
+                'https://api.getjoystick.com/api/v1/combine/?' . $requestQueryParamsSerialized
+            )
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('x-api-key', $this->config->getApiKey())
             ->withBody($this->config->getStreamFactory()->createStream(json_encode($requestBody)));
 
         $response = $this->config->getHttpClient()->sendRequest($request);
 
-        if (($statusCode = $response->getStatusCode()) !== 200) {
-            // TODO: Make better exceptions handling
-            throw new \RuntimeException("Joystick returned status code $statusCode (body: {$response->getBody()})");
+        if ($response->getStatusCode() !== 200) {
+            throw $this->mapHttpResponseToException($response);
         }
 
-        return json_decode($response->getBody(), true);
+        return json_decode((string)$response->getBody(), true);
+    }
+
+    private function mapHttpResponseToException(ResponseInterface $response)
+    {
+        $statusCode = $response->getStatusCode();
+
+        switch ($statusCode) {
+            case 400:
+                return new BadRequestException((string)$response->getBody());
+            default:
+                return new \RuntimeException(
+                    "Joystick returned status code $statusCode (body: {$response->getBody()})"
+                );
+        }
     }
 }
