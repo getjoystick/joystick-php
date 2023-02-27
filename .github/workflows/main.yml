@@ -36,15 +36,15 @@ jobs:
                     - version: 7.2
                       phpunit: 8
                     - version: 7.3
-                      phpunit: 9
+                      phpunit: 8
                     - version: 7.4,
-                      phpunit: 9
+                      phpunit: 8
                     - version: 8.0
-                      phpunit: 9
+                      phpunit: 8
                     - version: 8.1,
-                      phpunit: 10
+                      phpunit: 8
                     - version: 8.2
-                      phpunit: 10
+                      phpunit: 8
                 stability: [prefer-stable]
 
         name: P${{ matrix.php.version }} - ${{ matrix.stability }} - ${{ matrix.os }}

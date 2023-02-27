@@ -78,7 +78,7 @@ class ClientTest extends TestCase
         $client->getContents(['content-id'], ['fullResponse' => $value]);
     }
 
-    public function nonBooleanValues()
+    public static function nonBooleanValues()
     {
         return [
             ['true'],

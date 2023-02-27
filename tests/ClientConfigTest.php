@@ -121,7 +121,7 @@ class ClientConfigTest extends TestCase
         $this->assertSame($semVer, $config->getSemVer());
     }
 
-    public function validSemverData()
+    public static function validSemverData()
     {
         return [
             ['0.0.1'],
@@ -142,7 +142,7 @@ class ClientConfigTest extends TestCase
         $config->setSemVer($semVer);
     }
 
-    public function invalidSemverData()
+    public static function invalidSemverData()
     {
         return [
             ['0.0.0-prerelease'],
