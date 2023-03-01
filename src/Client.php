@@ -5,19 +5,28 @@ declare(strict_types=1);
 namespace Joystick;
 
 use Assert\Assert;
+use Joystick\CacheKeyBuilder;
 use Joystick\Exceptions\BadRequestException;
 use Psr\Http\Message\ResponseInterface;
 use stdClass;
 
 class Client
 {
+    /**
+     * @var ClientConfig
+     */
     private $config;
+
+    /**
+     * @var ClientServices
+     */
+    private $clientServices;
 
     private function __construct()
     {
     }
 
-    public static function create(ClientConfig $config)
+    public static function create(ClientConfig $config, ClientServices $services = null): self
     {
         // Validation
         Assert::that($config->getApiKey(), 'API key')->notEmpty();
@@ -25,6 +34,7 @@ class Client
         // Instantiation
         $client = new static();
         $client->config = clone $config;
+        $client->clientServices = !$services ? new ClientServices($config) : $services;
 
         return $client;
     }
@@ -43,19 +53,21 @@ class Client
      */
     public function getContents(array $contentIds, array $options = [])
     {
-        $assertion = Assert::lazy()
-            ->that($contentIds, 'contentIds', 'contentIds')->minCount(1)->all()->string();
-        if (isset($options['refresh'])) {
-            $assertion->that($options['refresh'], 'refresh')->boolean();
-        }
-        if (isset($options['serialized'])) {
-            $assertion->that($options['serialized'], 'serialized')->boolean();
-        }
-        if (isset($options['fullResponse'])) {
-            $assertion->that($options['fullResponse'], 'fullResponse')->boolean();
-        }
-        $assertion->verifyNow();
+        $this->validateGetContents($contentIds, $options);
 
+        $contentIdsSorted =  array_merge([], $contentIds);
+        sort($contentIdsSorted);
+        $cacheKey = $this->clientServices->getCacheKeyBuilder()->build([
+            $contentIdsSorted,
+            $options['serialized'] ?? null,
+            $options['fullResponse'] ?? null,
+        ]);
+
+        if (empty($options['refresh'])) {
+            if ($cachedResult = $this->getCache()->get($cacheKey)) {
+                return $cachedResult;
+            }
+        }
 
         $requestQueryParams =  array_merge(
             [
@@ -66,6 +78,7 @@ class Client
         );
 
         $requestQueryParamsSerialized = http_build_query($requestQueryParams);
+
         $requestBody = array_merge(
             [
                 'u' => $this->config->getUserId() ?? '',
@@ -89,7 +102,27 @@ class Client
             throw $this->mapHttpResponseToException($response);
         }
 
-        return json_decode((string)$response->getBody(), true);
+        $result = json_decode((string)$response->getBody(), true);
+        $this->getCache()->set($cacheKey, $result, $this->config->getExpiration());
+
+        return $result;
+    }
+
+
+    private function validateGetContents(array $contentIds, array $options = [])
+    {
+        $assertion = Assert::lazy()
+            ->that($contentIds, 'contentIds', 'contentIds')->minCount(1)->all()->string();
+        if (isset($options['refresh'])) {
+            $assertion->that($options['refresh'], 'refresh')->boolean();
+        }
+        if (isset($options['serialized'])) {
+            $assertion->that($options['serialized'], 'serialized')->boolean();
+        }
+        if (isset($options['fullResponse'])) {
+            $assertion->that($options['fullResponse'], 'fullResponse')->boolean();
+        }
+        $assertion->verifyNow();
     }
 
     private function mapHttpResponseToException(ResponseInterface $response)
@@ -104,5 +137,15 @@ class Client
                     "Joystick returned status code $statusCode (body: {$response->getBody()})"
                 );
         }
+    }
+
+    public function clearCache(): bool
+    {
+        return $this->getCache()->clear();
+    }
+
+    private function getCache()
+    {
+        return $this->config->getCache();
     }
 }

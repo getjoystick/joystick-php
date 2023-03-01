@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Joystick;
 
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\SimpleCache\CacheInterface;
 
 class ClientConfig
 {
@@ -50,6 +52,11 @@ class ClientConfig
     private $semVer;
 
     /**
+     * @var \Psr\SimpleCache\CacheInterface
+     */
+    private $cache;
+
+    /**
      * Amount of time to cache in minutes. Default = 10
      * @var int
      */
@@ -60,6 +67,7 @@ class ClientConfig
         $this->httpClient = Psr18ClientDiscovery::find();
         $this->requestFactory = Psr17FactoryDiscovery::findRequestFactory();
         $this->streamFactory = Psr17FactoryDiscovery::findStreamFactory();
+        $this->cache = new ArrayCachePool();
     }
 
     public static function create()
@@ -224,6 +232,26 @@ class ClientConfig
     public function setStreamFactory(StreamFactoryInterface $streamFactory): self
     {
         $this->streamFactory = $streamFactory;
+        return $this;
+    }
+
+    /**
+     * 
+     * @return 
+     */
+    public function getCache(): CacheInterface
+    {
+        return $this->cache;
+    }
+
+    /**
+     * 
+     * @param $cache 
+     * @return self
+     */
+    public function setCache(CacheInterface $cache): self
+    {
+        $this->cache = $cache;
         return $this;
     }
 }

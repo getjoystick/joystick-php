@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\SimpleCache\CacheInterface;
 
 class ClientConfigTest extends TestCase
 {
@@ -35,6 +36,7 @@ class ClientConfigTest extends TestCase
         $this->assertInstanceOf(ClientInterface::class, $config->getHttpClient());
         $this->assertInstanceOf(RequestFactoryInterface::class, $config->getRequestFactory());
         $this->assertInstanceOf(StreamFactoryInterface::class, $config->getStreamFactory());
+        $this->assertInstanceOf(CacheInterface::class, $config->getCache());
         $this->assertSame($config->getExpiration(), ClientConfig::DEFAULT_EXPIRATION_TIME_MINS);
     }
 

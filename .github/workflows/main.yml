@@ -61,8 +61,11 @@ jobs:
               run: |
                   echo "::add-matcher::${{ runner.tool_cache }}/php.json"
                   echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-            - name: Install dependencies
-              run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction && composer global require phpunit/phpunit '^8.5.33'
+            - name: Install dependencies (and remove local phpunit)
+              run: |
+                composer update --${{ matrix.stability }} --prefer-dist --no-interaction \
+                  && composer remove phpunit/phpunit \
+                  && composer global require phpunit/phpunit '^8.5.33'
 
             - name: Execute tests
               run: phpunit --version && phpunit
