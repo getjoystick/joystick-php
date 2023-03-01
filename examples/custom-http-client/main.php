@@ -5,6 +5,7 @@ use Symfony\Component\HttpClient\Psr18Client;
 
 require(__DIR__ . '/vendor/autoload.php');
 require(__DIR__ . '/PerformanceMeasurementClient.php');
+require(__DIR__ . '/../helpers/get-content-ids.php');
 
 $http_client_autodiscover = getenv('AUTODISCOVER') === 'true';
 $http_client_timeout = getenv('TIMEOUT');
@@ -32,7 +33,7 @@ if (!$http_client_autodiscover) {
 
 $client = \Joystick\Client::create($config);
 
-$fetchedData = $client->getContents(["test-my-php-library", "sample-second"], [
+$fetchedData = $client->getContents(getContentIdsFromEnv(), [
     'serialized' => true,
     'fullResponse' => true,
 ]);

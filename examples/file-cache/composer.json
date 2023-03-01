@@ -1,0 +1,30 @@
+{
+    "name": "getjoystick/joystick-php-example-custom-http-client",
+    "description": "Sample of how to use Joystick PHP library with custom HTTP client",
+    "homepage": "https://github.com/getjoystick/joystick-php",
+    "license": "MIT",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Joystick and contributors",
+            "homepage": "https://getjoystick.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/getjoystick/joystick-php"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "getjoystick/joystick-php": "dev-feature/create-project-structure",
+        "guzzlehttp/guzzle": "^7.5",
+        "cache/filesystem-adapter": "^1.2"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}

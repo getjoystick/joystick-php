@@ -14,7 +14,7 @@ how Joystick PHP client may flexibly:
 
 -   Change working directory to this folder
 -   `composer install`
--   `JOYSTICK_API_KEY=<api-key> php ./main.php`
+-   `CONTENT_IDS=content-id1,content-id2 JOYSTICK_API_KEY=<api-key> php ./main.php`
 
 ## Custom environment variables
 
@@ -26,4 +26,5 @@ behaviors:
 | AUTODISCOVER         | `true` or any other value  | makes library to find the existing HTTP implemntation with    [ `php-http/discovery` ]( https://docs.php-http.org/en/latest/discovery.html ) |
 | TIMEOUT              | any number (int, or float) | enables custom timeout (in seconds)                                                                                                          |
 | MEASURE_PERFORMANCE  | `true` or any other value  | uses wrapping around Symfony HTTP Client to measure the performance of every http request                                                    |
+| CONTENT_IDS          | Comma-separated values     | the content-ids which should be passed as `c` query parameter to Joystick Multiple Content API                                               |
 
