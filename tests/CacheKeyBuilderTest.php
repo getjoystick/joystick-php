@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 
 class CacheKeyBuilderTest extends TestCase
 {
-
     /**
      * @var CacheKeyBuilder
      */

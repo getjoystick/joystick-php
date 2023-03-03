@@ -18,13 +18,14 @@
     ],
     "require": {
         "php": ">=7.2",
-        "getjoystick/joystick-php": "dev-feature/create-project-structure",
+        "getjoystick/joystick-php": "dev-main",
         "symfony/http-client": "^6.2",
         "nyholm/psr7": "^1.5"
     },
     "config": {
         "allow-plugins": {
             "php-http/discovery": true
-        }
+        },
+        "lock": false
     }
 }

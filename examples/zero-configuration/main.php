@@ -1,6 +1,7 @@
 <?php
+
 // Uses library from the parent folder, not from the packagist or repository
-require(__DIR__ . '/../vendor/autoload.php');
+require(__DIR__ . '/../../vendor/autoload.php');
 require(__DIR__ . '/../helpers/get-content-ids.php');
 
 $config = \Joystick\ClientConfig::create()
@@ -8,9 +9,8 @@ $config = \Joystick\ClientConfig::create()
 
 $client = \Joystick\Client::create($config);
 
-$getContents = function ()  use ($client) {
+$getContents = function () use ($client) {
     return $client->getContents(getContentIdsFromEnv(), [
-        'serialized' => false,
         'fullResponse' => true,
     ]);
 };

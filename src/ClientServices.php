@@ -11,9 +11,22 @@ class ClientServices
      */
     private $cacheKeyBuilder;
 
-    public function __construct(ClientConfig $config)
+    /**
+     * @var Apis\MultipleContent
+     */
+    private $multipleContentApi;
+
+    private function __construct()
     {
-        $this->cacheKeyBuilder = new CacheKeyBuilder($config);
+    }
+
+    public static function create(ClientConfig $config)
+    {
+        $instance = new static();
+        $instance->cacheKeyBuilder = new CacheKeyBuilder($config);
+        $instance->multipleContentApi =  Apis\MultipleContent::create($config, $instance);
+
+        return $instance;
     }
 
     /**
@@ -25,12 +38,30 @@ class ClientServices
     }
 
     /**
-     * @param CacheKeyBuilder $cacheKeyBuilder 
+     * @param CacheKeyBuilder $cacheKeyBuilder
      * @return self
      */
     public function setCacheKeyBuilder($cacheKeyBuilder): self
     {
         $this->cacheKeyBuilder = $cacheKeyBuilder;
+        return $this;
+    }
+
+    /**
+     * @return Apis\MultipleContent
+     */
+    public function getMultipleContentApi(): Apis\MultipleContent
+    {
+        return $this->multipleContentApi;
+    }
+
+    /**
+     * @param Apis\MultipleContent $multipleContentApi
+     * @return ClientServices
+     */
+    public function setMultipleContentApi(Apis\MultipleContent $multipleContentApi): ClientServices
+    {
+        $this->multipleContentApi = $multipleContentApi;
         return $this;
     }
 }

@@ -37,7 +37,7 @@ class ClientConfigTest extends TestCase
         $this->assertInstanceOf(RequestFactoryInterface::class, $config->getRequestFactory());
         $this->assertInstanceOf(StreamFactoryInterface::class, $config->getStreamFactory());
         $this->assertInstanceOf(CacheInterface::class, $config->getCache());
-        $this->assertSame($config->getExpiration(), ClientConfig::DEFAULT_EXPIRATION_TIME_MINS);
+        $this->assertSame($config->getCacheExpirationSeconds(), ClientConfig::DEFAULT_EXPIRATION_TIME_SECONDS);
     }
 
     public function testClone()
@@ -65,7 +65,7 @@ class ClientConfigTest extends TestCase
         $config = ClientConfig::create()
             ->setUserId($BEFORE_CLONE['user_id'])
             ->setApiKey($BEFORE_CLONE['api_key'])
-            ->setExpiration($BEFORE_CLONE['expiration'])
+            ->setCacheExpirationSeconds($BEFORE_CLONE['expiration'])
             ->setParams($BEFORE_CLONE['params'])
             ->setSemVer($BEFORE_CLONE['sem_ver'])
             ->setHttpClient($this->httpClient->reveal())
@@ -77,7 +77,7 @@ class ClientConfigTest extends TestCase
 
         $config->setUserId($AFTER_CLONE['user_id'])
             ->setApiKey($AFTER_CLONE['api_key'])
-            ->setExpiration($AFTER_CLONE['expiration'])
+            ->setCacheExpirationSeconds($AFTER_CLONE['expiration'])
             ->setSemVer($AFTER_CLONE['sem_ver'])
             ->setParams($AFTER_CLONE['params'])
             ->setHttpClient($this->httpClientSecond->reveal())
@@ -86,7 +86,7 @@ class ClientConfigTest extends TestCase
 
         $this->assertSame($BEFORE_CLONE['user_id'], $configCloned->getUserId());
         $this->assertSame($BEFORE_CLONE['api_key'], $configCloned->getApiKey());
-        $this->assertSame($BEFORE_CLONE['expiration'], $configCloned->getExpiration());
+        $this->assertSame($BEFORE_CLONE['expiration'], $configCloned->getCacheExpirationSeconds());
         $this->assertSame($BEFORE_CLONE['params'], $configCloned->getParams());
         $this->assertSame($BEFORE_CLONE['sem_ver'], $configCloned->getSemVer());
         $this->assertSame($this->httpClient->reveal(), $configCloned->getHttpClient());

@@ -1,52 +1,97 @@
 # Very short description of the package
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor/:package_name.svg?style=flat-square)](https://packagist.org/packages/:vendor/:package_name)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor/:package_name.svg?style=flat-square)](https://packagist.org/packages/:vendor/:package_name)
-![GitHub Actions](https://github.com/:vendor/:package_name/actions/workflows/main.yml/badge.svg)
+[![GitHub Actions](https://github.com/getjoystick/joystick-php/actions/workflows/main.yml/badge.svg)](<(https://github.com/getjoystick/joystick-php/actions?query=branch%3Amaster)>)
 
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what PSRs you support to avoid any confusion with users and contributors.
+[![Latest Stable Version](https://poser.pugx.org/getjoystick/joystick-php/v/stable.svg)](https://packagist.org/packages/getjoystick/joystick-php)
+[![Total Downloads](https://poser.pugx.org/getjoystick/joystick-php/downloads.svg)](https://packagist.org/packages/getjoystick/joystick-php)
+[![License](https://poser.pugx.org/getjoystick/joystick-php/license.svg)](https://packagist.org/packages/getjoystick/joystick-php)
+
+This is the library that simplifies the way how you can communicate with [Joystick API](https://docs.getjoystick.com/).
+
+## Requirements
+
+PHP 7.2 and later
 
 ## Installation
 
-You can install the package via composer:
+You can install the package via [Composer](http://getcomposer.org/):
 
 ```bash
-composer require :vendor/:package_name
+composer require getjoystick/joystick-php
+```
+
+We will try to find the PSR-18 compatible HTTP client within your dependencies using
+[`php-http/discovery`](https://docs.php-http.org/en/latest/discovery.html), if you don't have one
+installed, just run this command to install
+[Guzzle HTTP client](https://docs.guzzlephp.org/en/stable/):
+
+```bash
+composer require guzzlehttp/guzzle
 ```
 
 ## Usage
 
+To use the client, use Composer's [autoload](https://getcomposer.org/doc/01-basic-usage.md#autoloading):
+
 ```php
-// Usage description here
+require_once 'vendor/autoload.php';
 ```
 
-### Testing
+Simple usage looks like this:
 
+```php
+$config = \Joystick\ClientConfig::create()->setApiKey(getenv('JOYSTICK_API_KEY'));
+
+$client = \Joystick\Client::create($config);
+
+$getContentsResponse = $client->getContents(['content-id1', 'content-id2'], [
+    'fullResponse' => true,
+]);
+```
+
+### Specifying additional parameters:
+
+When creating the `ClientConfig` object, you can specify additional parameters which will be used
+by all API calls from the client, for more details see 
+[API documentation](https://docs.getjoystick.com/api-reference/):
+
+```php
+$config = \Joystick\ClientConfig::create()
+    ->setApiKey(getenv('JOYSTICK_API_KEY'))
+    ->setCacheExpirationSeconds(600) // 10 mins
+    ->setParams([
+        'param1' => 'value1',
+        'param2' => 'value2',
+     ])
+     ->setSemVer('0.0.1')
+     ->setUserId('user-id-1');
+```
+
+### Caching 
+
+By default, the client uses [array caching](https://packagist.org/packages/cache/array-adapter),
+which means that if you build the HTTP application where each process exists after the request 
+has been processed – the cache will be erased after the process is finished.
+
+You can specify your own cache implementation which conforms PSR
+
+## Testing
+
+To run unit tests, just run:
 ```bash
-composer test
+phpunit
 ```
-
-### Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ### Security
 
-If you discover any security related issues, please email :author_email instead of using the issue tracker.
+If you discover any security related issues, please email [letsgo@getjoystick.com](letsgo@getjoystick.com) 
+instead of using the issue tracker.
 
 ## Credits
 
--   [:author_name](https://github.com/:vendor)
--   [All Contributors](../../contributors)
+- [Joystick](https://github.com/getjoystick)
+- [All Contributors](../../contributors)
 
 ## License
 
-The :license_shortname. Please see [License File](LICENSE.md) for more information.
-
-## PHP Package Boilerplate
-
-This package was generated using the [PHP Package Boilerplate](https://laravelpackageboilerplate.com) by [Beyond Code](http://beyondco.de/).
+The MIT. Please see [License File](LICENSE.md) for more information.

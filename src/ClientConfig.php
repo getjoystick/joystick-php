@@ -14,7 +14,7 @@ use Psr\SimpleCache\CacheInterface;
 
 class ClientConfig
 {
-    public const DEFAULT_EXPIRATION_TIME_MINS = 10;
+    public const DEFAULT_EXPIRATION_TIME_SECONDS = 300;
 
     /**
      * @var ClientInterface $httpClient
@@ -52,15 +52,20 @@ class ClientConfig
     private $semVer;
 
     /**
-     * @var \Psr\SimpleCache\CacheInterface
+     * @var CacheInterface
      */
     private $cache;
 
     /**
-     * Amount of time to cache in minutes. Default = 10
+     * @var bool
+     */
+    private $serialized;
+
+    /**
+     * Cache expiration in seconds. Default to 300.
      * @var int
      */
-    private $expiration = self::DEFAULT_EXPIRATION_TIME_MINS;
+    private $cacheExpirationSeconds = self::DEFAULT_EXPIRATION_TIME_SECONDS;
 
     private function __construct()
     {
@@ -68,6 +73,7 @@ class ClientConfig
         $this->requestFactory = Psr17FactoryDiscovery::findRequestFactory();
         $this->streamFactory = Psr17FactoryDiscovery::findStreamFactory();
         $this->cache = new ArrayCachePool();
+        $this->serialized = false;
     }
 
     public static function create()
@@ -86,7 +92,7 @@ class ClientConfig
 
     /**
      * @param string $apiKey
-     * @return self
+     * @return static
      */
     public function setApiKey(string $apiKey): self
     {
@@ -104,7 +110,7 @@ class ClientConfig
 
     /**
      * @param string $userId
-     * @return self
+     * @return static
      */
     public function setUserId(string $userId): self
     {
@@ -122,7 +128,7 @@ class ClientConfig
 
     /**
      * @param array $params
-     * @return self
+     * @return static
      */
     public function setParams(array $params): self
     {
@@ -137,7 +143,6 @@ class ClientConfig
     }
 
 
-
     /**
      * @return string
      */
@@ -148,7 +153,7 @@ class ClientConfig
 
     /**
      * @param string $semVer
-     * @return self
+     * @return static
      */
     public function setSemVer(string $semVer): self
     {
@@ -165,19 +170,19 @@ class ClientConfig
      * Amount of time to cache in minutes. Default = 10
      * @return int
      */
-    public function getExpiration(): int
+    public function getCacheExpirationSeconds(): int
     {
-        return $this->expiration;
+        return $this->cacheExpirationSeconds;
     }
 
     /**
      * Amount of time to cache in minutes. Default = 10
-     * @param int $expiration Amount of time to cache in minutes. Default = 10
-     * @return self
+     * @param int $cacheExpirationSeconds Amount of time to cache in minutes. Default = 10
+     * @return static
      */
-    public function setExpiration(int $expiration): self
+    public function setCacheExpirationSeconds(int $cacheExpirationSeconds): self
     {
-        $this->expiration = $expiration;
+        $this->cacheExpirationSeconds = $cacheExpirationSeconds;
         return $this;
     }
 
@@ -191,7 +196,7 @@ class ClientConfig
 
     /**
      * @param ClientInterface $httpClient
-     * @return self
+     * @return static
      */
     public function setHttpClient(ClientInterface $httpClient): self
     {
@@ -209,7 +214,7 @@ class ClientConfig
 
     /**
      * @param RequestFactoryInterface $requestFactory
-     * @return self
+     * @return static
      */
     public function setRequestFactory(RequestFactoryInterface $requestFactory): self
     {
@@ -227,7 +232,7 @@ class ClientConfig
 
     /**
      * @param StreamFactoryInterface $streamFactory
-     * @return self
+     * @return static
      */
     public function setStreamFactory(StreamFactoryInterface $streamFactory): self
     {
@@ -236,8 +241,7 @@ class ClientConfig
     }
 
     /**
-     * 
-     * @return 
+     * @return CacheInterface
      */
     public function getCache(): CacheInterface
     {
@@ -245,13 +249,31 @@ class ClientConfig
     }
 
     /**
-     * 
-     * @param $cache 
-     * @return self
+     *
+     * @param CacheInterface $cache
+     * @return static
      */
     public function setCache(CacheInterface $cache): self
     {
         $this->cache = $cache;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getSerialized(): bool
+    {
+        return $this->serialized;
+    }
+
+    /**
+     * @param bool $serialized
+     * @return static
+     */
+    public function setSerialized(bool $serialized): self
+    {
+        $this->serialized = $serialized;
         return $this;
     }
 }

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Joystick;
 
 use Assert\Assert;
-use Joystick\CacheKeyBuilder;
-use Joystick\Exceptions\BadRequestException;
-use Psr\Http\Message\ResponseInterface;
-use stdClass;
+use Joystick\Exceptions\MultipleContentApiException;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Client\RequestExceptionInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 
 class Client
 {
@@ -34,7 +35,7 @@ class Client
         // Instantiation
         $client = new static();
         $client->config = clone $config;
-        $client->clientServices = !$services ? new ClientServices($config) : $services;
+        $client->clientServices = !$services ? ClientServices::create($client->config) : $services;
 
         return $client;
     }
@@ -43,100 +44,31 @@ class Client
      * Getting Multiple Pieces of Content via API:
      * https://docs.getjoystick.com/api-reference-combine/
      *
-     *
-     * @param string[] $contentIds  List of content identifiers
+     * @param string[] $contentIds List of content identifiers
      * @param array{refresh: boolean, serialized: boolean, fullResponse: boolean} $options
      *
-     * @throws \Psr\Http\Client\ClientExceptionInterface
-     * @throws \Psr\Http\Client\RequestExceptionInterface
-     * @throws \Psr\Http\Client\NetworkExceptionInterface
+     * @return array. Keys are the `contentIds`. When `fullResponse` is `true`, the value will be raw response from API,
+     *                when `false` – your content.
+     *
+     * @throws MultipleContentApiException if any error happens with provided content ids.
+     * e.g. if content id "myConfig01" is correct, but "myConfi02" is misspelled
+     * @throws ClientExceptionInterface
+     * @throws RequestExceptionInterface
+     * @throws NetworkExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function getContents(array $contentIds, array $options = [])
     {
-        $this->validateGetContents($contentIds, $options);
-
-        $contentIdsSorted =  array_merge([], $contentIds);
-        sort($contentIdsSorted);
-        $cacheKey = $this->clientServices->getCacheKeyBuilder()->build([
-            $contentIdsSorted,
-            $options['serialized'] ?? null,
-            $options['fullResponse'] ?? null,
-        ]);
-
-        if (empty($options['refresh'])) {
-            if ($cachedResult = $this->getCache()->get($cacheKey)) {
-                return $cachedResult;
-            }
-        }
-
-        $requestQueryParams =  array_merge(
-            [
-                'c' => json_encode($contentIds),
-                'dynamic' => 'true',
-            ],
-            !empty($options['serialized']) ? ['responseType' =>  'serialized'] : []
-        );
-
-        $requestQueryParamsSerialized = http_build_query($requestQueryParams);
-
-        $requestBody = array_merge(
-            [
-                'u' => $this->config->getUserId() ?? '',
-                'p' => $this->config->getParams() ?? new stdClass(),
-            ],
-            $this->config->getSemVer() ? ['v' => $this->config->getSemVer()] : []
-        );
-
-        $request = $this->config->getRequestFactory()
-            ->createRequest(
-                'GET',
-                'https://api.getjoystick.com/api/v1/combine/?' . $requestQueryParamsSerialized
-            )
-            ->withHeader('Content-Type', 'application/json')
-            ->withHeader('x-api-key', $this->config->getApiKey())
-            ->withBody($this->config->getStreamFactory()->createStream(json_encode($requestBody)));
-
-        $response = $this->config->getHttpClient()->sendRequest($request);
-
-        if ($response->getStatusCode() !== 200) {
-            throw $this->mapHttpResponseToException($response);
-        }
-
-        $result = json_decode((string)$response->getBody(), true);
-        $this->getCache()->set($cacheKey, $result, $this->config->getExpiration());
-
-        return $result;
+        return $this->clientServices->getMultipleContentApi()->getContents($contentIds, $options);
     }
 
-
-    private function validateGetContents(array $contentIds, array $options = [])
+    /**
+     * Getting single piece of Content via API
+     * @see getContents
+     */
+    public function getContent(string $contentId, array $options = [])
     {
-        $assertion = Assert::lazy()
-            ->that($contentIds, 'contentIds', 'contentIds')->minCount(1)->all()->string();
-        if (isset($options['refresh'])) {
-            $assertion->that($options['refresh'], 'refresh')->boolean();
-        }
-        if (isset($options['serialized'])) {
-            $assertion->that($options['serialized'], 'serialized')->boolean();
-        }
-        if (isset($options['fullResponse'])) {
-            $assertion->that($options['fullResponse'], 'fullResponse')->boolean();
-        }
-        $assertion->verifyNow();
-    }
-
-    private function mapHttpResponseToException(ResponseInterface $response)
-    {
-        $statusCode = $response->getStatusCode();
-
-        switch ($statusCode) {
-            case 400:
-                return new BadRequestException((string)$response->getBody());
-            default:
-                return new \RuntimeException(
-                    "Joystick returned status code $statusCode (body: {$response->getBody()})"
-                );
-        }
+        return $this->clientServices->getMultipleContentApi()->getContents([$contentId], $options)[$contentId];
     }
 
     public function clearCache(): bool

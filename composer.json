@@ -1,11 +1,18 @@
 {
     "name": "getjoystick/joystick-php",
-    "description": "Joystick PHP library",
+    "description": "Joystick is a modern remote configuration and dynamic content service designed specifically for operating apps and games. Upgrade to more agility and evolve your product faster. Change or hot-update your content and configurations instantly at scale without code. Segment, ab test, feature flag, schedule events and more. Joystick is a breeze to use yet powerful.",
     "keywords": [
-        "joystick",
-        "joystick-php",
-        "remote configuration",
-        "feature flagging"
+        "Remote configuration",
+        "feature flagging",
+        "dynamic content",
+        "remote configs",
+        "live-ops",
+        "game ops",
+        "ab testing",
+        "segmentation",
+        "dynamic json",
+        "update json",
+        "remote json"
     ],
     "homepage": "https://github.com/getjoystick/joystick-php",
     "license": "MIT",
@@ -30,7 +37,7 @@
     "require-dev": {
         "guzzlehttp/guzzle": "^7.5",
         "phpspec/prophecy": "^1.17",
-        "phpunit/phpunit": "^8.5.33",
+        "phpunit/phpunit": "^8.5",
         "squizlabs/php_codesniffer": "^3.7"
     },
     "minimum-stability": "stable",
