@@ -1,7 +1,6 @@
 # PHP client for [Joystick](https://www.getjoystick.com/)
 
 [![GitHub Actions](https://github.com/getjoystick/joystick-php/actions/workflows/main.yml/badge.svg)](<(https://github.com/getjoystick/joystick-php/actions?query=branch%3Amaster)>)
-
 [![Latest Stable Version](https://poser.pugx.org/getjoystick/joystick-php/v/stable.svg)](https://packagist.org/packages/getjoystick/joystick-php)
 [![Total Downloads](https://poser.pugx.org/getjoystick/joystick-php/downloads.svg)](https://packagist.org/packages/getjoystick/joystick-php)
 [![License](https://poser.pugx.org/getjoystick/joystick-php/license.svg)](https://packagist.org/packages/getjoystick/joystick-php)
