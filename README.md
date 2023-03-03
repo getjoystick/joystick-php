@@ -44,21 +44,30 @@ $config = \Joystick\ClientConfig::create()->setApiKey(getenv('JOYSTICK_API_KEY')
 
 $client = \Joystick\Client::create($config);
 
-$getContentsResponse = $client->getContents(['content-id1', 'content-id2'], [
-    'fullResponse' => true,
-]);
+$getContentsResponse = $client->getContents(['content-id1', 'content-id2']);
+
+$getContentsResponse->myProperty1
+$getContentsResponse->myProperty2
+```
+
+### Requesting Content by single Content Id
+
+```php
+$getContentResponse = $client->getContent('content-id1');
+$getContentResponse->myProperty1
 ```
 
 ### Specifying additional parameters:
 
 When creating the `ClientConfig` object, you can specify additional parameters which will be used
-by all API calls from the client, for more details see 
+by all API calls from the client, for more details see
 [API documentation](https://docs.getjoystick.com/api-reference/):
 
 ```php
 $config = \Joystick\ClientConfig::create()
     ->setApiKey(getenv('JOYSTICK_API_KEY'))
     ->setCacheExpirationSeconds(600) // 10 mins
+    ->setSerialized(true)
     ->setParams([
         'param1' => 'value1',
         'param2' => 'value2',
@@ -67,13 +76,74 @@ $config = \Joystick\ClientConfig::create()
      ->setUserId('user-id-1');
 ```
 
+### Options
+
+#### `fullResponse`
+
+In most of the cases you will be not interested in the full response from the API, but if you're you can specify 
+`fullResponse` option to the client methods. The client will return you raw API response:
+```php
+$getContentResponse = $client->getContent('content-id1', ['fullResponse' => true]);
+// OR
+$getContentsResponse = $client->getContents(['content-id1', 'content-id2'], ['fullResponse' => true]);
+```
+
+#### `serialized`
+
+When `true`, we will pass query parameter `responseType=serialized` 
+to [Joystick API](https://docs.getjoystick.com/api-reference-combine/). 
+
+```php
+$getContentResponse = $client->getContent('content-id1', ['serialized' => true]);
+// OR
+$getContentsResponse = $client->getContents(['content-id1', 'content-id2'], ['serialized' => true]);
+```
+
+#### `refresh`
+
+If you want to ignore existing cache and request the new config – pass this option as `true`.
+
+```php
+$getContentResponse = $client->getContent('content-id1', ['refresh' => true]);
+// OR
+$getContentsResponse = $client->getContents(['content-id1', 'content-id2'], ['refresh' => true]);
+```
+
+This option can be set for every API call from the client by setting `setSerialized(true)`:
+
+```php
+$config = \Joystick\ClientConfig::create()
+    ->setApiKey(getenv('JOYSTICK_API_KEY'))
+    ->setSerialized(true)
+```
+
 ### Caching 
 
 By default, the client uses [array caching](https://packagist.org/packages/cache/array-adapter),
-which means that if you build the HTTP application where each process exists after the request 
+which means that if you build the HTTP application where each process exits after the request 
 has been processed – the cache will be erased after the process is finished.
 
-You can specify your own cache implementation which conforms PSR
+You can specify your [cache implementation which conforms PSR-16](https://packagist.org/providers/psr/simple-cache-implementation).
+
+
+See [`examples/file-cache`](./examples/file-cache) for more details.
+
+#### Clear the cache
+
+If you want to clear the cache – run `$client->clearCache()`.
+
+> Note that we will call `clear()` on the PSR-16 interface.
+> Make sure that you use different cache instances in different places of your app
+
+
+### HTTP Client
+
+If you want to provide custom HTTP client, which may be useful for use-cases like specifying custom proxy,
+collecting detailed metrics about HTTP requests,
+
+You can specify your [HTTP client implementation which conforms PSR-18](https://packagist.org/providers/psr/simple-cache-implementation).
+
+See [`examples/custom-http-client`](./examples/custom-http-client) for more details.
 
 ## Testing
 
