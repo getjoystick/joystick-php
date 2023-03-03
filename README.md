@@ -1,4 +1,4 @@
-# Very short description of the package
+# PHP client for [Joystick](https://www.getjoystick.com/)
 
 [![GitHub Actions](https://github.com/getjoystick/joystick-php/actions/workflows/main.yml/badge.svg)](<(https://github.com/getjoystick/joystick-php/actions?query=branch%3Amaster)>)
 
