@@ -71,4 +71,24 @@ class ClientTest extends TestCase
 
         $client->getContents($contentIds, $options);
     }
+
+    public function testGetContentShouldCallServiceMethod()
+    {
+        $contentId = 'cid1';
+        $options = [];
+        $values = ['myProperty1' => 'myProperty1Value'];
+
+        $multipleContent = $this->prophesize(MultipleContent::class);
+        $multipleContent
+            ->getContents([$contentId], $options)
+            ->willReturn(['cid1' => $values])
+            ->shouldBeCalledOnce();
+
+        $this->config->setApiKey(self::API_KEY);
+        $clientServices = ClientServices::create($this->config)->setMultipleContentApi($multipleContent->reveal());
+        $client = Client::create($this->config, $clientServices);
+
+        $content = $client->getContent($contentId, $options);
+        $this->assertSame($values, $content);
+    }
 }

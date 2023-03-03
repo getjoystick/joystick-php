@@ -37,6 +37,7 @@ class ClientConfigTest extends TestCase
         $this->assertInstanceOf(RequestFactoryInterface::class, $config->getRequestFactory());
         $this->assertInstanceOf(StreamFactoryInterface::class, $config->getStreamFactory());
         $this->assertInstanceOf(CacheInterface::class, $config->getCache());
+        $this->assertSame(false, $config->getSerialized());
         $this->assertSame($config->getCacheExpirationSeconds(), ClientConfig::DEFAULT_EXPIRATION_TIME_SECONDS);
     }
 
@@ -49,7 +50,8 @@ class ClientConfigTest extends TestCase
             'sem_ver' => '0.0.1',
             'params' => [
                 'key' => 'before-value'
-            ]
+            ],
+            'serialized' => true,
         ];
         $AFTER_CLONE = [
             'user_id' => 'user-id-after-clone',
@@ -58,7 +60,8 @@ class ClientConfigTest extends TestCase
             'sem_ver' => '0.0.2',
             'params' => [
                 'key' => 'after-value'
-            ]
+            ],
+            'serialized' => false,
         ];
 
 
@@ -68,6 +71,7 @@ class ClientConfigTest extends TestCase
             ->setCacheExpirationSeconds($BEFORE_CLONE['expiration'])
             ->setParams($BEFORE_CLONE['params'])
             ->setSemVer($BEFORE_CLONE['sem_ver'])
+            ->setSerialized($BEFORE_CLONE['serialized'])
             ->setHttpClient($this->httpClient->reveal())
             ->setRequestFactory($this->requestFactory->reveal())
             ->setStreamFactory($this->streamFactory->reveal());
@@ -79,6 +83,7 @@ class ClientConfigTest extends TestCase
             ->setApiKey($AFTER_CLONE['api_key'])
             ->setCacheExpirationSeconds($AFTER_CLONE['expiration'])
             ->setSemVer($AFTER_CLONE['sem_ver'])
+            ->setSerialized($AFTER_CLONE['serialized'])
             ->setParams($AFTER_CLONE['params'])
             ->setHttpClient($this->httpClientSecond->reveal())
             ->setRequestFactory($this->requestFactorySecond->reveal())
@@ -87,6 +92,7 @@ class ClientConfigTest extends TestCase
         $this->assertSame($BEFORE_CLONE['user_id'], $configCloned->getUserId());
         $this->assertSame($BEFORE_CLONE['api_key'], $configCloned->getApiKey());
         $this->assertSame($BEFORE_CLONE['expiration'], $configCloned->getCacheExpirationSeconds());
+        $this->assertSame($BEFORE_CLONE['serialized'], $configCloned->getSerialized());
         $this->assertSame($BEFORE_CLONE['params'], $configCloned->getParams());
         $this->assertSame($BEFORE_CLONE['sem_ver'], $configCloned->getSemVer());
         $this->assertSame($this->httpClient->reveal(), $configCloned->getHttpClient());
