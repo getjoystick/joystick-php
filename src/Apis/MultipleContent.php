@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Joystick\Apis;
 
 use Assert\Assert;

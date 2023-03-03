@@ -10,9 +10,7 @@ $config = \Joystick\ClientConfig::create()
 $client = \Joystick\Client::create($config);
 
 $getContents = function () use ($client) {
-    return $client->getContents(getContentIdsFromEnv(), [
-        'fullResponse' => true,
-    ]);
+    return $client->getContents(getContentIdsFromEnv(), []);
 };
 
 echo json_encode($getContents(), JSON_PRETTY_PRINT);
