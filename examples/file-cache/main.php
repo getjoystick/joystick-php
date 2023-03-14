@@ -16,8 +16,8 @@ $filesystemCache = new FilesystemCachePool($filesystem);
 
 $config = \Joystick\ClientConfig::create()
     ->setApiKey(getenv('JOYSTICK_API_KEY'))
-    ->setSemVer("0.1.0")
-    // ->setCacheExpirationSeconds(-1)
+    ->setSemVer("0.0.1")
+    ->setCacheExpirationSeconds(10)
     ->setCache($filesystemCache);
 
 $client = \Joystick\Client::create($config);
