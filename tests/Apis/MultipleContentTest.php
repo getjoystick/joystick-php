@@ -9,6 +9,8 @@ use Joystick\Apis\MultipleContent;
 use Joystick\CacheKeyBuilder;
 use Joystick\ClientConfig;
 use Joystick\ClientServices;
+use Joystick\Exceptions\BadRequest;
+use Joystick\Exceptions\MultipleContentApi;
 use PHPUnit\Framework\TestCase;
 use InvalidArgumentException;
 use Prophecy\Argument;
@@ -671,5 +673,77 @@ class MultipleContentTest extends TestCase
                 $httpCallResultUnencoded,
             ],
         ];
+    }
+
+    // ! ||--------------------------------------------------------------------------------||
+    // ! ||                              API Exceptions                                    ||
+    // ! ||--------------------------------------------------------------------------------||
+
+    public function testApiExceptionOnStringAtContentPlace()
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn(200);
+        $response->getBody()->willReturn(json_encode([
+            "not-existing-content-id" => "Error 404,  https://api.getjoystick.com/api/v1/config/not-existing-content" .
+                "-id/dynamic?responsetype=parsed {\"data\":null,\"status\":2,\"message\":null,\"details\":null}.",
+            "sample-second" => [
+                "data" => [
+                    "normal" => "response"
+                ],
+                "hash" => "ad3028ae",
+                "meta" => [
+                    "uid" => 0,
+                    "mod" => 0,
+                    "variants" => [],
+                    "seg" => []
+                ]
+            ]
+        ]));
+
+        $this->httpClient->sendRequest(Argument::any())->willReturn($response);
+
+        $client = MultipleContent::create(
+            $this->config->setApiKey(self::API_KEY),
+            $this->clientServices
+        );
+
+        $this->expectException(MultipleContentApi::class);
+        $client->getContents(['cid1', 'cid2']);
+    }
+
+    public function testApiExceptionOn400HttpCode()
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn(400);
+        $response->getBody()->willReturn(json_encode([]));
+
+        $this->httpClient->sendRequest(Argument::any())->willReturn($response);
+
+        $client = MultipleContent::create(
+            $this->config->setApiKey(self::API_KEY),
+            $this->clientServices
+        );
+
+
+        $this->expectException(BadRequest::class);
+        $client->getContents(['not-existing-content-id', 'sample-second']);
+    }
+
+    public function testApiExceptionOn500HttpCode()
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn(500);
+        $response->getBody()->willReturn(json_encode([]));
+
+        $this->httpClient->sendRequest(Argument::any())->willReturn($response);
+
+        $client = MultipleContent::create(
+            $this->config->setApiKey(self::API_KEY),
+            $this->clientServices
+        );
+
+
+        $this->expectException(\RuntimeException::class);
+        $client->getContents(['cid-1', 'cid-2']);
     }
 }

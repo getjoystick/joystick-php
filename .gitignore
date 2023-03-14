@@ -2,6 +2,7 @@ build
 docs
 vendor
 coverage
+.idea
 
 # Caches
 .phpunit.result.cache

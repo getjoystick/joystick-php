@@ -16,6 +16,11 @@ class ClientServices
      */
     private $multipleContentApi;
 
+    /**
+     * @var Apis\SingleContent
+     */
+    private $singleContentApi;
+
     private function __construct()
     {
     }
@@ -24,7 +29,8 @@ class ClientServices
     {
         $instance = new static();
         $instance->cacheKeyBuilder = new CacheKeyBuilder($config);
-        $instance->multipleContentApi =  Apis\MultipleContent::create($config, $instance);
+        $instance->multipleContentApi = Apis\MultipleContent::create($config, $instance);
+        $instance->singleContentApi = Apis\SingleContent::create($config, $instance);
 
         return $instance;
     }
@@ -62,6 +68,26 @@ class ClientServices
     public function setMultipleContentApi(Apis\MultipleContent $multipleContentApi): ClientServices
     {
         $this->multipleContentApi = $multipleContentApi;
+        return $this;
+    }
+
+    /**
+     *
+     * @return Apis\SingleContent
+     */
+    public function getSingleContentApi()
+    {
+        return $this->singleContentApi;
+    }
+
+    /**
+     *
+     * @param Apis\SingleContent $singleContentApi
+     * @return self
+     */
+    public function setSingleContentApi($singleContentApi): self
+    {
+        $this->singleContentApi = $singleContentApi;
         return $this;
     }
 }

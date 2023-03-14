@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Joystick\Exceptions;
 
-class MultipleContentApiException extends \RuntimeException implements JoystickApiException
+class MultipleContentApi extends \RuntimeException implements JoystickApi
 {
     public static function create($errors): self
     {

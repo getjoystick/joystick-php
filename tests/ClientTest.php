@@ -7,6 +7,7 @@ namespace Joystick\Tests;
 use Assert\InvalidArgumentException;
 use GuzzleHttp\Psr7\HttpFactory;
 use Joystick\Apis\MultipleContent;
+use Joystick\Apis\SingleContent;
 use Joystick\Client;
 use Joystick\ClientConfig;
 use Joystick\ClientServices;
@@ -90,5 +91,29 @@ class ClientTest extends TestCase
 
         $content = $client->getContent($contentId, $options);
         $this->assertSame($values, $content);
+    }
+
+    public function testPublishContentUpdateShouldCallServiceMethod()
+    {
+        $contentId = 'cid1';
+        $params = [
+            'description' => 'Description of the content',
+            'content' => [
+                'language' => 'en-US',
+            ]
+        ];
+
+
+        $multipleContent = $this->prophesize(SingleContent::class);
+        $multipleContent
+            ->publishContentUpdate($contentId, $params)
+            ->willReturn(null)
+            ->shouldBeCalledOnce();
+
+        $this->config->setApiKey(self::API_KEY);
+        $clientServices = ClientServices::create($this->config)->setSingleContentApi($multipleContent->reveal());
+        $client = Client::create($this->config, $clientServices);
+
+        $client->publishContentUpdate($contentId, $params);
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Joystick;
 
 use Assert\Assert;
-use Joystick\Exceptions\MultipleContentApiException;
+use Joystick\Exceptions\MultipleContentApi;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
@@ -50,7 +50,7 @@ class Client
      * @return array. Keys are the `contentIds`. When `fullResponse` is `true`, the value will be raw response from API,
      *                when `false` – your content.
      *
-     * @throws MultipleContentApiException if any error happens with provided content ids.
+     * @throws MultipleContentApi if any error happens with provided content ids.
      * e.g. if content id "myConfig01" is correct, but "myConfi02" is misspelled
      * @throws ClientExceptionInterface
      * @throws RequestExceptionInterface
@@ -69,6 +69,17 @@ class Client
     public function getContent(string $contentId, array $options = [])
     {
         return $this->clientServices->getMultipleContentApi()->getContents([$contentId], $options)[$contentId];
+    }
+
+    /**
+     * @param string $contentId
+     * @param array{description: string, content: mixed, dynamicContentMap: array} $params
+     * @return void
+     * @throws ClientExceptionInterface
+     */
+    public function publishContentUpdate(string $contentId, array $params): void
+    {
+        $this->clientServices->getSingleContentApi()->publishContentUpdate($contentId, $params);
     }
 
     public function clearCache(): bool

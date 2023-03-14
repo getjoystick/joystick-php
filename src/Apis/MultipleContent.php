@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Joystick\Apis;
 
 use Assert\Assert;
-use Joystick\Exceptions\MultipleContentApiException;
+use Joystick\Exceptions\MultipleContentApi;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
@@ -129,7 +129,7 @@ class MultipleContent extends AbstractApi
             }
         }
         if (!empty($errors)) {
-            throw MultipleContentApiException::create($errors);
+            throw MultipleContentApi::create($errors);
         }
     }
 }

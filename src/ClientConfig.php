@@ -7,6 +7,7 @@ namespace Joystick;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
+use InvalidArgumentException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -160,14 +161,14 @@ class ClientConfig
         // Regex proposed at https://semver.org/ , but without prerelease data (hyphen after numbers)
         $semverRegex = '/^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)$/';
         if (preg_match($semverRegex, $semVer) !== 1) {
-            throw new \LogicException('Provided semantic version for ' . __METHOD__ . ' is not valid');
+            throw new \InvalidArgumentException('Provided semantic version for ' . __METHOD__ . ' is not valid');
         }
         $this->semVer = $semVer;
         return $this;
     }
 
     /**
-     * Amount of time to cache in minutes. Default = 10
+     * Amount of time to cache in seconds
      * @return int
      */
     public function getCacheExpirationSeconds(): int
@@ -176,12 +177,15 @@ class ClientConfig
     }
 
     /**
-     * Amount of time to cache in minutes. Default = 10
-     * @param int $cacheExpirationSeconds Amount of time to cache in minutes. Default = 10
+     * Amount of time to cache in seconds
+     * @param int $cacheExpirationSeconds Amount of time to cache in seconds
      * @return static
      */
     public function setCacheExpirationSeconds(int $cacheExpirationSeconds): self
     {
+        if ($cacheExpirationSeconds < 0) {
+            throw new \InvalidArgumentException('Provided cache expiration for ' . __METHOD__ . ' is not valid');
+        }
         $this->cacheExpirationSeconds = $cacheExpirationSeconds;
         return $this;
     }

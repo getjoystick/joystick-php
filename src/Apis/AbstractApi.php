@@ -6,7 +6,7 @@ namespace Joystick\Apis;
 
 use Joystick\ClientConfig;
 use Joystick\ClientServices;
-use Joystick\Exceptions\BadRequestException;
+use Joystick\Exceptions\BadRequest;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -25,7 +25,7 @@ abstract class AbstractApi
      */
     protected $clientServices;
 
-    private function __construct(ClientConfig $config, ClientServices $clientServices)
+    protected function __construct(ClientConfig $config, ClientServices $clientServices)
     {
         $this->config = $config;
         $this->clientServices = $clientServices;
@@ -41,7 +41,7 @@ abstract class AbstractApi
      * @param string $uri
      * @param $body
      * @return mixed
-     * @throws ClientExceptionInterface|\RuntimeException|BadRequestException
+     * @throws ClientExceptionInterface|\RuntimeException|BadRequest
      */
     protected function makeJoystickRequest(string $httpMethod, string $uri, $body)
     {
@@ -66,7 +66,7 @@ abstract class AbstractApi
 
     /**
      * @param ResponseInterface $response
-     * @return BadRequestException|\RuntimeException
+     * @return BadRequest|\RuntimeException
      */
     private function mapHttpResponseToException(ResponseInterface $response)
     {
@@ -74,7 +74,7 @@ abstract class AbstractApi
 
         switch ($statusCode) {
             case 400:
-                return new BadRequestException((string)$response->getBody());
+                return new BadRequest((string)$response->getBody());
             default:
                 return new \RuntimeException(
                     "Joystick returned status code $statusCode (body: {$response->getBody()})"
