@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Uses library from the parent folder, not from the packagist or repository
 require(__DIR__ . '/../../vendor/autoload.php');
 require(__DIR__ . '/../helpers/get-content-ids.php');

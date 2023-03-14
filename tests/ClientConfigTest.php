@@ -30,6 +30,7 @@ class ClientConfigTest extends TestCase
         $this->streamFactorySecond = $this->prophesize(StreamFactoryInterface::class);
     }
 
+
     public function testCreateDefaults()
     {
         $config = ClientConfig::create();
@@ -100,7 +101,45 @@ class ClientConfigTest extends TestCase
         $this->assertSame($this->streamFactory->reveal(), $configCloned->getStreamFactory());
     }
 
-    public function testSetParamValue()
+    public function testApiKeyShouldBeString()
+    {
+        $config = ClientConfig::create();
+        $this->expectException(\TypeError::class);
+        $config->setApiKey(123);
+    }
+
+    public function testApiKeyShouldBeNonEmptyString()
+    {
+        $config = ClientConfig::create();
+        $this->expectException(\InvalidArgumentException::class);
+        $config->setApiKey('');
+    }
+
+    public function testUserIdShouldBeAString()
+    {
+        $config = ClientConfig::create();
+        $this->expectException(\TypeError::class);
+        $config->setUserId(123);
+    }
+
+    public function testSetParamValueBeforeSettingParams()
+    {
+        $config = ClientConfig::create();
+        $config
+            ->setParamValue('setViaSetParamValue', 'param-value')
+            ->setParamValue('secondSetViaSetParamValue', 'second-param-value');
+
+        $this->assertEqualsCanonicalizing(
+            [
+                'setViaSetParamValue' => 'param-value',
+                'secondSetViaSetParamValue' => 'second-param-value'
+            ],
+            $config->getParams()
+        );
+    }
+
+
+    public function testSetParamValueAfterSetParamsIsCalled()
     {
         $config = ClientConfig::create();
         $config->setParams([
@@ -114,6 +153,30 @@ class ClientConfigTest extends TestCase
                 'setViaSetParams' => 'value',
                 'setViaSetParamValue' => 'param-value',
                 'secondSetViaSetParamValue' => 'second-param-value'
+            ],
+            $config->getParams()
+        );
+    }
+
+    public function testSettingParamsWithComplexValues()
+    {
+        $nested_array = [[['array_value']], ['nested-object' => 'value']];
+        $std_class = new \stdClass();
+
+        $config = ClientConfig::create();
+        $config->setParams([
+            'stdClass' => $std_class,
+            'nestedArray' => $nested_array,
+        ])
+            ->setParamValue('boolean', true)
+            ->setParamValue('null', null);
+
+        $this->assertEqualsCanonicalizing(
+            [
+                'stdClass' => $std_class,
+                'nestedArray' => $nested_array,
+                'boolean' => true,
+                'null' => null,
             ],
             $config->getParams()
         );
@@ -140,6 +203,7 @@ class ClientConfigTest extends TestCase
             ['10.20.30'],
         ];
     }
+
     /**
      * @dataProvider invalidSemverData
      */
@@ -161,5 +225,27 @@ class ClientConfigTest extends TestCase
             ['1.00.00'],
             ['01.02.03'],
         ];
+    }
+
+    public function testExceptionOnWrongTypeForCacheExpirationSeconds()
+    {
+        $config = ClientConfig::create();
+        $this->expectException(\TypeError::class);
+        $config->setCacheExpirationSeconds('123');
+    }
+
+    public function testExceptionOnNegativeExpirationSeconds()
+    {
+        $config = ClientConfig::create();
+        $this->expectException(\InvalidArgumentException::class);
+        $config->setCacheExpirationSeconds(-1);
+    }
+
+
+    public function testNonBooleanSerializedProperty()
+    {
+        $config = ClientConfig::create();
+        $this->expectException(\TypeError::class);
+        $config->setSerialized('true');
     }
 }

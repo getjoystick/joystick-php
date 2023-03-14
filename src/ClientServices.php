@@ -25,9 +25,9 @@ class ClientServices
     {
     }
 
-    public static function create(ClientConfig $config)
+    public static function create(ClientConfig $config): ClientServices
     {
-        $instance = new static();
+        $instance = new self();
         $instance->cacheKeyBuilder = new CacheKeyBuilder($config);
         $instance->multipleContentApi = Apis\MultipleContent::create($config, $instance);
         $instance->singleContentApi = Apis\SingleContent::create($config, $instance);

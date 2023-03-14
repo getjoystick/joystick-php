@@ -17,6 +17,9 @@ use Psr\SimpleCache\CacheInterface;
 
 class ClientTest extends TestCase
 {
+    /**
+     * @var ClientConfig
+     */
     private $config;
 
     public const API_KEY = 'api-key';
@@ -64,7 +67,7 @@ class ClientTest extends TestCase
         $options = ['fullResponse' => true, 'serialized' => true];
 
         $multipleContent = $this->prophesize(MultipleContent::class);
-        $multipleContent->getContents($contentIds, $options)->shouldBeCalledOnce();
+        $multipleContent->getContents($contentIds, $options)->willReturn([])->shouldBeCalledOnce();
 
         $this->config->setApiKey(self::API_KEY);
         $clientServices = ClientServices::create($this->config)->setMultipleContentApi($multipleContent->reveal());

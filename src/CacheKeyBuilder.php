@@ -16,6 +16,10 @@ class CacheKeyBuilder
         $this->config = $config;
     }
 
+    /**
+     * @param mixed[] $additionalSegments
+     * @return string
+     */
     public function build(array $additionalSegments): string
     {
         if ($params = $this->config->getParams()) {
@@ -28,6 +32,10 @@ class CacheKeyBuilder
             $this->config->getUserId()
         ], $additionalSegments);
 
-        return hash('sha256', json_encode($keySegments));
+        $encodedKeySegments = json_encode($keySegments);
+
+        assert(!empty($encodedKeySegments));
+
+        return hash('sha256', $encodedKeySegments);
     }
 }

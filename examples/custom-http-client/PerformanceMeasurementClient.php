@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+namespace JoystickCustomHttpClient;
+
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\HttpClient\Psr18Client;
-
 
 class PerformanceMeasurementClient implements ClientInterface
 {

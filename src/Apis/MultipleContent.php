@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Joystick\Apis;
 
 use Assert\Assert;
-use Joystick\Exceptions\MultipleContentApi;
+use Joystick\ClientConfig;
+use Joystick\ClientServices;
+use Joystick\Exceptions\Api\MultipleContentApi;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
@@ -14,19 +16,32 @@ use Psr\SimpleCache\InvalidArgumentException;
 class MultipleContent extends AbstractApi
 {
     /**
+     * @param ClientConfig $config
+     * @param ClientServices $clientServices
+     * @return self
+     */
+    public static function create(ClientConfig $config, ClientServices $clientServices): MultipleContent
+    {
+        return new self($config, $clientServices);
+    }
+
+
+    /**
      * Getting Multiple Pieces of Content via API:
      * https://docs.getjoystick.com/api-reference-combine/
      *
      *
      * @param string[] $contentIds List of content identifiers
-     * @param array{refresh: boolean, serialized: boolean, fullResponse: boolean} $options
+     * @param array{refresh?: boolean, serialized?: boolean, fullResponse?: boolean} $options
+     *
+     * @return array<string, mixed>
      *
      * @throws ClientExceptionInterface
      * @throws RequestExceptionInterface
      * @throws NetworkExceptionInterface
      * @throws InvalidArgumentException
      */
-    public function getContents(array $contentIds, array $options = [])
+    public function getContents(array $contentIds, array $options = []): array
     {
         $this->validateSignature($contentIds, $options);
         $normalizedOptions = $this->normalizeOptions($options);
@@ -35,6 +50,7 @@ class MultipleContent extends AbstractApi
 
         if (!$normalizedOptions['refresh']) {
             if ($cachedResult = $this->getCache()->get($cacheKey)) {
+                assert(is_array($cachedResult));
                 return $cachedResult;
             }
         }
@@ -63,7 +79,9 @@ class MultipleContent extends AbstractApi
             $requestBody
         );
 
-        $this->validateGetContentsResponse($decodedResponse, $normalizedOptions['serialized']);
+        assert(is_array($decodedResponse));
+
+        $this->validateGetContentsResponse($decodedResponse);
 
         $processedResponse = $decodedResponse;
         if (!$normalizedOptions['fullResponse']) {
@@ -75,6 +93,11 @@ class MultipleContent extends AbstractApi
         return $processedResponse;
     }
 
+    /**
+     * @param string[] $contentIds
+     * @param array<string, mixed> $normalizedOptions
+     * @return string
+     */
     private function buildCacheKey(array $contentIds, array $normalizedOptions): string
     {
         $contentIdsSorted = array_merge([], $contentIds);
@@ -86,6 +109,10 @@ class MultipleContent extends AbstractApi
         ]);
     }
 
+    /**
+     * @param array{refresh?: boolean, serialized?: boolean, fullResponse?: boolean} $options
+     * @return array{refresh: boolean | null, serialized: boolean, fullResponse: boolean | null}
+     */
     private function normalizeOptions(array $options): array
     {
         $normalizedOptions = [];
@@ -96,6 +123,10 @@ class MultipleContent extends AbstractApi
         return $normalizedOptions;
     }
 
+    /**
+     * @param array<string, array{data: mixed}> $decodedResponse
+     * @return array<string, mixed>
+     */
     private function mapGetContentsResponse(array $decodedResponse): array
     {
         return array_map(function ($content) {
@@ -103,10 +134,17 @@ class MultipleContent extends AbstractApi
         }, $decodedResponse);
     }
 
+    /**
+     * @param string[] $contentIds
+     * @param array{refresh?: boolean, serialized?: boolean, fullResponse?: boolean} $options
+     * @return void
+     *
+     * @throws \Assert\InvalidArgumentException
+     */
     private function validateSignature(array $contentIds, array $options = [])
     {
         $assertion = Assert::lazy()
-            ->that($contentIds, 'contentIds', 'contentIds')->minCount(1)->all()->string();
+            ->that($contentIds, 'contentIds', 'contentIds')->minCount(1)->all()->string()->notEmpty();
         if (isset($options['refresh'])) {
             $assertion->that($options['refresh'], 'refresh')->boolean();
         }
@@ -119,7 +157,11 @@ class MultipleContent extends AbstractApi
         $assertion->verifyNow();
     }
 
-    private function validateGetContentsResponse($decodedResponse, $isSerialized)
+    /**
+     * @param array<string, string|mixed[]> $decodedResponse
+     * @return void
+     */
+    private function validateGetContentsResponse($decodedResponse)
     {
         $errors = [];
         foreach ($decodedResponse as $contentId => $content) {

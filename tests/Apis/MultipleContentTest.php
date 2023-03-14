@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Joystick\Tests\Apis;
 
+use Assert\LazyAssertionException;
 use GuzzleHttp\Psr7\HttpFactory;
+use InvalidArgumentException;
 use Joystick\Apis\MultipleContent;
 use Joystick\CacheKeyBuilder;
 use Joystick\ClientConfig;
 use Joystick\ClientServices;
-use Joystick\Exceptions\BadRequest;
-use Joystick\Exceptions\MultipleContentApi;
+use Joystick\Exceptions\Api\Http\BadRequest;
+use Joystick\Exceptions\Api\Http\ServerError;
+use Joystick\Exceptions\Api\MultipleContentApi;
 use PHPUnit\Framework\TestCase;
-use InvalidArgumentException;
 use Prophecy\Argument;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -60,11 +62,60 @@ class MultipleContentTest extends TestCase
         $this->clientServices = ClientServices::create($this->config);
     }
 
+    // ! ||--------------------------------------------------------------------------------||
+    // ! ||                                Validation                                      ||
+    // ! ||--------------------------------------------------------------------------------||
+
     public function testGetContentsNoContentIds()
     {
         $this->expectException(InvalidArgumentException::class);
         $client = MultipleContent::create($this->config->setApiKey(self::API_KEY), $this->clientServices);
         $client->getContents([]);
+    }
+
+    /**
+     * @dataProvider invalidContentIds
+     */
+    public function testGetContentsInvalidContentIdsArray(array $contentIds)
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $this->httpClient->sendRequest(Argument::any())->willReturn($response);
+
+        $client = MultipleContent::create($this->config->setApiKey(self::API_KEY), $this->clientServices);
+        $this->expectException(LazyAssertionException::class);
+        $client->getContents($contentIds);
+    }
+
+    public function invalidContentIds()
+    {
+        return [
+            [
+                // Empty
+                []
+            ],
+            [
+                // Array of empty array
+                [[]]
+            ],
+            [
+                // Number
+                [123]
+            ],
+            [
+                // Boolean
+                [true]
+            ],
+
+            [
+                // Empty string
+                ['']
+            ],
+            [
+                // Array of empty strings
+                ['', '', '']
+            ],
+            [[null]]
+        ];
     }
 
     /**
@@ -111,6 +162,9 @@ class MultipleContentTest extends TestCase
         ];
     }
 
+    // ! ||--------------------------------------------------------------------------------||
+    // ! ||                        Different options behavior                              ||
+    // ! ||--------------------------------------------------------------------------------||
     public function testGetContentsMinimalIsProvided()
     {
         $response = $this->prophesize(ResponseInterface::class);
@@ -711,10 +765,13 @@ class MultipleContentTest extends TestCase
         $client->getContents(['cid1', 'cid2']);
     }
 
-    public function testApiExceptionOn400HttpCode()
+    /**
+     * @dataProvider fourXXDataProvider
+     */
+    public function testApiExceptionOn4XXHttpCode($statusCode)
     {
         $response = $this->prophesize(ResponseInterface::class);
-        $response->getStatusCode()->willReturn(400);
+        $response->getStatusCode()->willReturn($statusCode);
         $response->getBody()->willReturn(json_encode([]));
 
         $this->httpClient->sendRequest(Argument::any())->willReturn($response);
@@ -728,6 +785,50 @@ class MultipleContentTest extends TestCase
         $this->expectException(BadRequest::class);
         $client->getContents(['not-existing-content-id', 'sample-second']);
     }
+
+    public function fourXXDataProvider(): array
+    {
+        return [
+            [400],
+            [401],
+            [403],
+            [404],
+            [405],
+        ];
+    }
+
+    /**
+     * @dataProvider fiveXXDataProvider
+     */
+    public function testApiExceptionOn5XXHttpCode(int $statusCode)
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn($statusCode);
+        $response->getBody()->willReturn(json_encode([]));
+
+        $this->httpClient->sendRequest(Argument::any())->willReturn($response);
+
+        $client = MultipleContent::create(
+            $this->config->setApiKey(self::API_KEY),
+            $this->clientServices
+        );
+
+
+        $this->expectException(ServerError::class);
+        $client->getContents(['not-existing-content-id', 'sample-second']);
+    }
+
+    public function fiveXXDataProvider(): array
+    {
+        return [
+            [500],
+            [501],
+            [502],
+            [503],
+            [504],
+        ];
+    }
+
 
     public function testApiExceptionOn500HttpCode()
     {
@@ -743,7 +844,24 @@ class MultipleContentTest extends TestCase
         );
 
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ServerError::class);
+        $client->getContents(['cid-1', 'cid-2']);
+    }
+
+    public function testApiExceptionOnWrongJson()
+    {
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn(200);
+        $response->getBody()->willReturn('It is not a JSON');
+
+        $this->httpClient->sendRequest(Argument::any())->willReturn($response);
+
+        $client = MultipleContent::create(
+            $this->config->setApiKey(self::API_KEY),
+            $this->clientServices
+        );
+
+        $this->expectException(\Joystick\Exceptions\Api\Exception::class);
         $client->getContents(['cid-1', 'cid-2']);
     }
 }

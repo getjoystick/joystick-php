@@ -18,6 +18,11 @@ class ClientConfig
     public const DEFAULT_EXPIRATION_TIME_SECONDS = 300;
 
     /**
+     * Magic number, if you want another number – just set standard cache provider via `setCache`
+     */
+    public const MAX_ITEMS_IN_CACHE = 1000;
+
+    /**
      * @var ClientInterface $httpClient
      */
     private $httpClient;
@@ -38,19 +43,19 @@ class ClientConfig
     private $apiKey;
 
     /**
-     * @var string
+     * @var string | null
      */
-    private $userId;
+    private $userId = null;
 
     /**
-     * @var array
+     * @var mixed[]|null
      */
-    private $params;
+    private $params = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private $semVer;
+    private $semVer = null;
 
     /**
      * @var CacheInterface
@@ -73,13 +78,13 @@ class ClientConfig
         $this->httpClient = Psr18ClientDiscovery::find();
         $this->requestFactory = Psr17FactoryDiscovery::findRequestFactory();
         $this->streamFactory = Psr17FactoryDiscovery::findStreamFactory();
-        $this->cache = new ArrayCachePool();
+        $this->cache = new ArrayCachePool(static::MAX_ITEMS_IN_CACHE);
         $this->serialized = false;
     }
 
-    public static function create()
+    public static function create(): ClientConfig
     {
-        return new static();
+        return new self();
     }
 
 
@@ -97,6 +102,11 @@ class ClientConfig
      */
     public function setApiKey(string $apiKey): self
     {
+        if (empty($apiKey)) {
+            throw new \InvalidArgumentException(
+                'API key passed to ' . __METHOD__ . ' should not be an empty string'
+            );
+        }
         $this->apiKey = $apiKey;
         return $this;
     }
@@ -120,7 +130,7 @@ class ClientConfig
     }
 
     /**
-     * @return array
+     * @return mixed[]|null
      */
     public function getParams(): ?array
     {
@@ -128,7 +138,7 @@ class ClientConfig
     }
 
     /**
-     * @param array $params
+     * @param mixed[] $params
      * @return static
      */
     public function setParams(array $params): self
@@ -137,8 +147,16 @@ class ClientConfig
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @return $this
+     */
     public function setParamValue(string $key, $value): self
     {
+        if (!$this->params) {
+            $this->params = [];
+        }
         $this->params[$key] = $value;
         return $this;
     }
