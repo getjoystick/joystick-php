@@ -7,12 +7,8 @@ namespace Joystick\Apis;
 use Assert\Assert;
 use Joystick\ClientConfig;
 use Joystick\ClientServices;
-use Joystick\Exceptions\MultipleContentApi;
 use Joystick\Utils\JsonEncodableValidator;
 use Psr\Http\Client\ClientExceptionInterface;
-use Psr\Http\Client\NetworkExceptionInterface;
-use Psr\Http\Client\RequestExceptionInterface;
-use Psr\SimpleCache\InvalidArgumentException;
 
 class SingleContent extends AbstractApi
 {
