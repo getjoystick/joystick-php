@@ -37,6 +37,7 @@
     "require-dev": {
         "guzzlehttp/guzzle": "^7.5",
         "phpspec/prophecy": "^1.17",
+        "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^8.5",
         "squizlabs/php_codesniffer": "^3.7"
     },
@@ -54,7 +55,9 @@
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
-        "lint": "./vendor/bin/phpcs --standard=./phpcs.xml ./src ./tests",
+        "lint": "./vendor/bin/phpcs --standard=./phpcs.xml ./src ./tests ./examples",
+        "phpstan": " vendor/bin/phpstan analyse -c ./phpstan-src.neon &&  vendor/bin/phpstan analyse -c ./phpstan-tests.neon",
+        "dev-test": "composer run test-coverage && composer run lint && composer run phpstan",
         "lint-fix": "./tools/php-cs-fixer/vendor/bin/php-cs-fixer fix"
     },
     "config": {

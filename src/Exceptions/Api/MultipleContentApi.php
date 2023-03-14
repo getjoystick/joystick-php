@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Joystick\Exceptions;
+namespace Joystick\Exceptions\Api;
 
-class MultipleContentApi extends \RuntimeException implements JoystickApi
+final class MultipleContentApi extends Exception
 {
-    public static function create($errors): self
+    /**
+     * @param string[] $errors
+     * @return static
+     */
+    public static function create(array $errors): self
     {
         $errorString = "The following errors found when calling Multiple Content API:";
         foreach ($errors as $errorText) {

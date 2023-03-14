@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Joystick;
 
 use Assert\Assert;
-use Joystick\Exceptions\MultipleContentApi;
+use Joystick\Exceptions\Api\MultipleContentApi;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
+use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 
 class Client
@@ -23,7 +24,7 @@ class Client
      */
     private $clientServices;
 
-    private function __construct()
+    final private function __construct()
     {
     }
 
@@ -45,10 +46,10 @@ class Client
      * https://docs.getjoystick.com/api-reference-combine/
      *
      * @param string[] $contentIds List of content identifiers
-     * @param array{refresh: boolean, serialized: boolean, fullResponse: boolean} $options
+     * @param array{refresh?: boolean, serialized?: boolean, fullResponse?: boolean} $options
      *
-     * @return array. Keys are the `contentIds`. When `fullResponse` is `true`, the value will be raw response from API,
-     *                when `false` – your content.
+     * @return mixed[]. Keys are the `contentIds`. When `fullResponse` is `true`,
+     *                  the value will be raw response from API, when `false` – your content.
      *
      * @throws MultipleContentApi if any error happens with provided content ids.
      * e.g. if content id "myConfig01" is correct, but "myConfi02" is misspelled
@@ -57,23 +58,30 @@ class Client
      * @throws NetworkExceptionInterface
      * @throws InvalidArgumentException
      */
-    public function getContents(array $contentIds, array $options = [])
+    public function getContents(array $contentIds, array $options = []): array
     {
         return $this->clientServices->getMultipleContentApi()->getContents($contentIds, $options);
     }
 
     /**
      * Getting single piece of Content via API
+     * @param string $contentId
+     * @param array{refresh?: boolean, serialized?: boolean, fullResponse?: boolean} $options
+     * @return mixed
+     * @throws ClientExceptionInterface
+     * @throws NetworkExceptionInterface
+     * @throws RequestExceptionInterface
+     * @throws InvalidArgumentException
      * @see getContents
      */
     public function getContent(string $contentId, array $options = [])
     {
-        return $this->clientServices->getMultipleContentApi()->getContents([$contentId], $options)[$contentId];
+        return $this->getContents([$contentId], $options)[$contentId];
     }
 
     /**
      * @param string $contentId
-     * @param array{description: string, content: mixed, dynamicContentMap: array} $params
+     * @param array{description: string, content: mixed, dynamicContentMap: mixed[]} $params
      * @return void
      * @throws ClientExceptionInterface
      */
@@ -87,7 +95,7 @@ class Client
         return $this->getCache()->clear();
     }
 
-    private function getCache()
+    private function getCache(): CacheInterface
     {
         return $this->config->getCache();
     }

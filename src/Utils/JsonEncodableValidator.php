@@ -6,20 +6,20 @@ namespace Joystick\Utils;
 
 use Joystick\Exceptions\NotJsonEncodable;
 
-class JsonEncodableValidator
+final class JsonEncodableValidator
 {
-    public static function create()
+    public static function create(): JsonEncodableValidator
     {
         return new static();
     }
 
     /**
-     * @param $value
-     * @param $paramName
-     * @throws NotJsonEncodable
+     * @param mixed $value
+     * @param string $paramName
      * @return void
+     * @throws NotJsonEncodable
      */
-    public function validate($value, $paramName)
+    public function validate($value, string $paramName)
     {
         json_encode($value);
 

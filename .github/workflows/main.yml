@@ -26,7 +26,10 @@ jobs:
                 run: composer install --no-interaction
 
             -   name: Lint code
-                run: ./vendor/bin/phpcs --standard=PSR12 ./src ./tests
+                run: composer run lint
+
+            -   name: PHPStan
+                run: composer run phpstan
 
     test:
         runs-on: ${{ matrix.os }}

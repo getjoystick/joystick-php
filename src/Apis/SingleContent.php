@@ -17,15 +17,22 @@ class SingleContent extends AbstractApi
      */
     private $jsonEncodableValidator;
 
-    protected function __construct(ClientConfig $config, ClientServices $clientServices)
+
+    /**
+     * @param ClientConfig $config
+     * @param ClientServices $clientServices
+     * @return SingleContent
+     */
+    public static function create(ClientConfig $config, ClientServices $clientServices): SingleContent
     {
-        parent::__construct($config, $clientServices);
-        $this->jsonEncodableValidator = JsonEncodableValidator::create();
+        $result = new self($config, $clientServices);
+        $result->jsonEncodableValidator = JsonEncodableValidator::create();
+        return $result;
     }
 
     /**
      * @param string $contentId
-     * @param array $params
+     * @param array{description: string, content: mixed, dynamicContentMap?: mixed[]} $params
      * @return void
      * @throws ClientExceptionInterface
      */
@@ -46,6 +53,11 @@ class SingleContent extends AbstractApi
         );
     }
 
+    /**
+     * @param string $contentId
+     * @param array{description: string, content: mixed, dynamicContentMap?: mixed[]} $params
+     * @return void
+     */
     private function validatePublishContentUpdateParams(string $contentId, array $params)
     {
         // Make sure that required fields are populated

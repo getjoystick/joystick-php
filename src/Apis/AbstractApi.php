@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Joystick\Apis;
 
+use Joystick\Exceptions;
 use Joystick\ClientConfig;
 use Joystick\ClientServices;
-use Joystick\Exceptions\BadRequest;
+use Joystick\Exceptions\Api\Http\BadRequest;
+use Joystick\Exceptions\Api\Http\ServerError;
+use Joystick\Exceptions\Api\Http\UnknownError;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -31,28 +34,31 @@ abstract class AbstractApi
         $this->clientServices = $clientServices;
     }
 
-    public static function create(ClientConfig $config, ClientServices $clientServices): self
-    {
-        return new static($config, $clientServices);
-    }
-
     /**
      * @param string $httpMethod
      * @param string $uri
-     * @param $body
+     * @param mixed[] $body
      * @return mixed
      * @throws ClientExceptionInterface|\RuntimeException|BadRequest
      */
     protected function makeJoystickRequest(string $httpMethod, string $uri, $body)
     {
+        $apiKey = $this->config->getApiKey();
+        $jsonEncodedBody = json_encode($body);
+
+        assert($apiKey !== null, 'API key should be present');
+        assert(
+            json_last_error() === JSON_ERROR_NONE && $jsonEncodedBody !== false,
+            'Body to Joystick API is not JSON encodable'
+        );
         $request = $this->config->getRequestFactory()
             ->createRequest(
                 $httpMethod,
                 $uri
             )
             ->withHeader('Content-Type', 'application/json')
-            ->withHeader('x-api-key', $this->config->getApiKey())
-            ->withBody($this->config->getStreamFactory()->createStream(json_encode($body)));
+            ->withHeader('x-api-key', $apiKey)
+            ->withBody($this->config->getStreamFactory()->createStream($jsonEncodedBody));
 
         $response = $this->config->getHttpClient()->sendRequest($request);
 
@@ -60,7 +66,13 @@ abstract class AbstractApi
             throw $this->mapHttpResponseToException($response);
         }
 
-        return json_decode((string)$response->getBody(), true);
+        $decodedJson = json_decode((string)$response->getBody(), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exceptions\Api\Exception('Incorrect JSON was returned from Joystick API');
+        }
+
+        return $decodedJson;
     }
 
 
@@ -72,13 +84,13 @@ abstract class AbstractApi
     {
         $statusCode = $response->getStatusCode();
 
-        switch ($statusCode) {
-            case 400:
-                return new BadRequest((string)$response->getBody());
-            default:
-                return new \RuntimeException(
-                    "Joystick returned status code $statusCode (body: {$response->getBody()})"
-                );
+        $errorMessage = "Joystick returned status code $statusCode (body: {$response->getBody()})";
+        if ($statusCode >= 400 && $statusCode < 500) {
+            return new BadRequest($errorMessage);
+        } elseif ($statusCode >= 500) {
+            return new ServerError($errorMessage);
+        } else {
+            return new UnknownError($errorMessage);
         }
     }
 
